@@ -41,17 +41,20 @@ public class projectServerCode {
 		}
 		
 		public String getName() {
+			if(name == null) {
+				name = "none";
+			}
 			return name;
 		}
 		
-//		public void setLobbyChoice(String i) {
-//			lobbyChoice = i;
-//		}
-//		
-//		public String getLobbyChoice() {
-//			return lobbyChoice;
-//		}
-		
+		public void send(String s) {
+			try {
+				DataOutputStream outToClient = new DataOutputStream(connection.getOutputStream());
+				outToClient.writeBytes(s);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		public Socket getConnection() {
 			return connection;
 		}
@@ -63,7 +66,6 @@ public class projectServerCode {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	static class Lobby {
 		String lobbyName;
-		
 		public Lobby(String lobbyName) {
 			this.lobbyName = lobbyName;
 		}
@@ -90,36 +92,47 @@ public class projectServerCode {
 //Game class: based on code found on stack overflow
 //https://stackoverflow.com/questions/58937039/java-create-a-team-then-add-players
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-	static class Game {
+	static class Game  implements Runnable {
+		String name;
 		HashMap<String, Lobby> lobbies = new LinkedHashMap<String, Lobby>();
 		String[] allLobbyNames;
-		int numLobbies = 0;
+		int numPlayers = 0;
+		Players player1;
+		Players player2;
+		boolean full = false;
 		
-		public void addLobby(String lobbyName) {
-			Lobby lobby = new Lobby(lobbyName);
-			lobbies.put(lobbyName, lobby);
-			allLobbyNames[numLobbies] = lobbyName;
-			numLobbies++;
+		public Game(String n) {
+			name = n;
 		}
 		
-		public void addPlayer (String teamName, String name, Socket c) {
-			Players player = new Players(c);
-			player.setName(name);
-			Lobby lobby = lobbies.get(teamName);
-			lobby.addPlayer(player);
-		}
-
-		public void lobbyExists (String possibleName) {
-			for (int i = 0; i <= numLobbies; i++) {
-				if (allLobbyNames[i] == possibleName) {
-					boolean exists = true;
-				}
-				else {
-					boolean exists = false;
-				}
+		public void addPlayer (Players p) {
+			if(numPlayers == 0) {
+				player1 = p;
+				numPlayers = 1;
+			}
+			else if(numPlayers == 1) {
+				player2 = p;
+				numPlayers = 2;
+				full = true;
+				Thread thread = new Thread(this);
+				thread.start();
 			}
 		}
 		
+		public boolean isFull() {
+			return full;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public String getPlayers() {
+			if(player2 == null) {
+				return "{"+player1.getName() + ",None}";
+			}
+			return "{"+player1.getName() + "," + player2.getName()+"}";
+		}
 		
 		public void print() {
 			for(Map.Entry<String , Lobby> entry : lobbies.entrySet() ) {
@@ -130,39 +143,22 @@ public class projectServerCode {
 			
 		}
 
+		@Override
+		public void run() {
+			player1.send("Game is beginning\n");
+			player2.send("Game is beginning\n");
+			while(true) {
+				
+			}
+		}
+
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//Lobby class: creates new lobbys, adds ability to add players to lobbys
-////////////////////////////////////////////////////////////////////////////////////////////////////	
-//	static class Lobby {
-//		String[] activePlayers;
-//		String[] activeLobbies;
-//		String[] lobbyNames;
-//		
-//		//creates a lobby 
-//		Lobby(String name) {
-//			for (int x = 0; x < 10; x++) {
-//			activeLobbies[x] = null;
-//			lobbyNames[x] = name;
-//			activePlayers[x] = null;
-//			}
-//		}
-//		
-//		//to add a player to a lobby: addPlayer(player.getName(i), i, activeLobbies[x]);
-//		public void addPlayer (String name, int i, int lobbyNum) {
-//			//add players to the active players in the active lobby number lobbyNum
-//			activeLobbies[i] = activePlayers[i];
-//		}
-//		
-//		public void removePlayer(String name, int i, int lobbyNum) {
-//			
-//		}
-//	}
 ////////////////////////////////////////////////////////////////////////////////////////////////////	
 // Lists: keeps track of players, previous messages, etc.
 ////////////////////////////////////////////////////////////////////////////////////////////////////	
 	static List<Players> players = new ArrayList<>();
+	static List<Game> games = new ArrayList<>();
 	static List<String> prevMsg = new ArrayList<>();
 	
 	static String[] board;
@@ -173,7 +169,7 @@ public class projectServerCode {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	static class ClientRequest implements Runnable {
 			Socket connectionSocket;
-			
+			private boolean noLobbies;
 			ClientRequest(Socket c){
 				connectionSocket = c;
 				
@@ -184,136 +180,91 @@ public class projectServerCode {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		String name;
+		try{
+		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+		DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 		
-		
-		try {
-			// this String name will need to be replaced...
-			String name; 
-			String lobbyChoice;
+		String clientMessage ="";
+		name = inFromClient.readLine();
+		Players p = new Players(connectionSocket);
+		p.setName(name);		
+		while(true) {
+			clientMessage = inFromClient.readLine();
+			if (clientMessage.contentEquals("1") == true) {
+				//user chooses to create new lobby
+				System.out.println("Code 01");
+				outToClient.writeBytes("User Chose to Create New Lobby! Please give the lobby a name:\n");
+				clientMessage = inFromClient.readLine();
+				Game game = new Game(clientMessage);
+				game.addPlayer(p);
+				games.add(game);
+				outToClient.writeBytes("Created Lobby called "+game.getName()+"! Waiting for another player to join.\n");
+				break;
+			}
 			
-			BufferedReader in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-			DataOutputStream out = new DataOutputStream(connectionSocket.getOutputStream());
-			
-			Game game = new Game();
-			
-			//this will need to be modified. 
-			String clientMessage = "";
-			name = in.readLine();
-			lobbyChoice = in.readLine();
-			for(int i = 0; i < players.size(); i++) {
-				if(players.get(i).getConnection() == connectionSocket) {
-					players.get(i).setName(name);
-					
-					DataOutputStream outToClient = new DataOutputStream(players.get(i).getConnection().getOutputStream());
-					
-					
-					if (lobbyChoice.contentEquals("1") == true) {
-						//user chooses to create new lobby
-						//players.get(i).setLobbyChoice("1");
-						
-						//HAVE A PRINT STATEMENT HERE CLIENT SIDE ASKING FOR LOBBY NAME
-						
-						String lobbyName = in.readLine();
-						game.addLobby(lobbyName);
-						game.addPlayer(lobbyName, players.get(i).getName(), players.get(i).getConnection());
-				
-						
-						
-						System.out.println("Code 01");
-						outToClient.writeBytes("User Chose to Create New Lobby " + lobbyName + "! (01)\r\n");
-						System.out.println(players.get(i).getName() + " has created lobby '" + lobbyName);
-					}
-					
-					if (lobbyChoice.contentEquals("2") == true) {
-						//user chooses to join existing lobby
-						//players.get(i).setLobbyChoice("2");
-						String userLobbyChoice = in.readLine();
-						if (Lobby.lobbyExists(userLobbyChoice) == true) {
-							game.addPlayer(userLobbyChoice, players.get(i).getName(), players.get(i).getConnection());
-							
-						}
-							//game.addPlayer(userLobbyChoice, players.get(i).getName(), players.get(i).getConnection());
-						else {
-							System.out.println("Invalid Lobby Selection!");
-							outToClient.writeBytes("Invalid Lobby Selection! Please choose an existing lobby name or create a new one (1): ");
-							String choice = in.readLine();
-							if (choice.contentEquals("1")) {
-								String lobbyName = in.readLine();
-								game.addLobby(lobbyName);
-								game.addPlayer(lobbyName, players.get(i).getName(), players.get(i).getConnection());
-						
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-								
-								System.out.println("Code 01");
-								outToClient.writeBytes("User Chose to Create New Lobby " + lobbyName + "! (31)\r\n");
-								System.out.println(players.get(i).getName() + " has created lobby '" + lobbyName);
-							}
-						}
-							System.out.println("Code 02");
-						
-							outToClient.writeBytes("User Chose to Join Existing Lobby! (02)\r\n");
-						
-					}
-					
-					
-					
-//					else if (lobbyChoice.contentEquals("1") == false && lobbyChoice.contentEquals("2") == false) {
-//						
-//						outToClient.writeBytes("Server: You must choose to either create a new lobby (1), or join an existing lobby (2): ");
-//						
-//						lobbyChoice = in.readLine();
-//						
-//						if (lobbyChoice.contentEquals("1") == true) {
-//							//user chooses to create new lobby
-//							players.get(i).setLobbyChoice("1");
-//							System.out.println("Code 11");
-//							outToClient.writeBytes("User Chose to Create New Lobby! (11)\r\n");
-//						}
-//						if (lobbyChoice.contentEquals("2") == true) {
-//							//user chooses to join existing lobby
-//							players.get(i).setLobbyChoice("2");
-//							System.out.println("Code 12");
-//							outToClient.writeBytes("User Chose to Join Existing Lobby! (12)\r\n");
-//
-//						}
-//						
-//						else {
-//							outToClient.writeBytes("Server: user entered invalid input, terminating connection...");
-//							closeConnection(players.get(i).getName());
-//						}
-//						
-//					}
-					
-					
-					
+			if (clientMessage.contentEquals("2") == true) {
+				outToClient.writeBytes("Here is a list of currently available lobbies: \n ");
+				outToClient.writeBytes(showLobbies()+"\n");
+				if(noLobbies) {
+					System.out.println(noLobbies);
+					outToClient.writeBytes("\t-= Hi " + name + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2):\n");
+					noLobbies = false;
+					clientMessage = " ";
+					continue;
 				}
+				while(true) {
+					clientMessage = inFromClient.readLine();
+					if(checkValid(clientMessage)) {
+						outToClient.writeBytes("Joining lobby, "+clientMessage+"\n");
+						games.get(Integer.parseInt(clientMessage)-1).addPlayer(p);
+						break;
+					}
+					else if (!clientMessage.equals("")){
+						outToClient.writeBytes("Invalid Lobby\n");
+						clientMessage = "";
+					}
+				}
+				break;
 			}
-			for(int i = 0; i < prevMsg.size();i++) {
-				out.writeBytes(prevMsg.get(i));
-			}
-			sendToAll(name + " has joined the chat!\n");
-			
-			while (true) {
-				
-				//put something here
-				
-				
-				
-			}
-			
-		} 
-		
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-	
-			
-			
-			
-			
+//		inFromClient.close();
+//		outToClient.close();
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+		}
 	}
+	
+	public String showLobbies() {
+		int count = 0;
+		String lobbies = "";
+		for(int i = 0 ; i < games.size();i++) {
+			if(!games.get(i).isFull()) {
+				count++;
+				lobbies += (i+1)+". Name:"+games.get(i).getName()+ " Players:" +games.get(i).getPlayers();
+				lobbies +="\n";
+			}
+		}
+		lobbies += " "+"Please input the number of the lobby you want to join.\n";
+		if(count == 0) {
+			lobbies = "Sorry there seems to be no games available right now \n Sending you back to lobby selection.\n";
+			noLobbies = true;
+			return lobbies;
+		}
+		noLobbies = false;
+		return lobbies;
+	}
+	
+	public boolean checkValid(String s) {
+		for(int i = 0; i < games.size();i++) {
+			if(Integer.parseInt(s) == i+1 && !games.get(i).isFull()) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // main(String[] args): sets up multithreading and adds new users to players 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -410,5 +361,4 @@ public class projectServerCode {
 		}
 	}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
- }
 }

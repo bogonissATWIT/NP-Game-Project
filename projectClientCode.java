@@ -38,7 +38,9 @@ public class projectClientCode {
 				try {
 					String modifiedMessage;
 					modifiedMessage = inFromServer.readLine();
-					System.out.println(modifiedMessage);
+					if(modifiedMessage != null) {
+					System.out.println(modifiedMessage);	
+					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					break;
@@ -74,37 +76,25 @@ public class projectClientCode {
 		String name = s.nextLine();
 		outToServer.writeBytes(name + "\r\n");
 		
-		System.out.print("\t-= Hi " + name + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2): ");
-		String lobbyChoice = s.nextLine();
-		outToServer.writeBytes(lobbyChoice + "\r\n");
-		
-		
-		if (lobbyChoice.contentEquals("1")) {
-			System.out.print(name + " chose to create a new lobby!\n");
+		String lobbyChoice = "";
+		while(true) {
+			System.out.print("\t-= Hi " + name + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2): ");
+			lobbyChoice = s.nextLine();
+			if(lobbyChoice.equals("2")) {
+				outToServer.writeBytes(lobbyChoice + "\r\n");	
+				break;
+			}
+			if(lobbyChoice.equals("1")) {
+				outToServer.writeBytes(lobbyChoice + "\r\n");	
+				lobbyChoice = s.nextLine();
+				outToServer.writeBytes(lobbyChoice + "\r\n");
+				break;
+			}
 		}
-		if (lobbyChoice.contentEquals("2")) {
-			System.out.print(name + " chose to join an existing lobby!\n");
-// we need to figure out how to tell if the lobby exists or not
-		}
-		
-		
-		System.out.print("Please type the name of the lobby: ");
-		String lobbyNameSelect = s.nextLine();
-		outToServer.writeBytes(lobbyNameSelect);
-		
-		if (lobbyChoice.contentEquals("1")) {
-			System.out.print(name + " created lobby '" + lobbyNameSelect +  "'!\n");
-		}
-		if (lobbyChoice.contentEquals("2")) {
-			System.out.print(name + " joined lobby '" + lobbyNameSelect + "'!\n");
-// we need to figure out how to tell if the lobby exists or not
-		}
-		
-		
-		String play = s.nextLine();
+
+		String play = "";
 		
 		while(!play.toUpperCase().equals("QUIT")) {
-			
 			play = s.nextLine();
 			outToServer.writeBytes(play + "\r\n");
 		}
