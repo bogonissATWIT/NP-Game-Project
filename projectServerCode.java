@@ -26,12 +26,12 @@ public class projectServerCode {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // People class: defines individual players and ties their information to their thread connection
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-	static class Players {
+	static class Players implements Runnable{
 		String name;
 		String lobbyChoice;
 		Socket connection;
-		
-		
+		boolean isTurn = false;
+		String move;
 		Players(Socket c){
 			connection = c;
 		}
@@ -50,13 +50,48 @@ public class projectServerCode {
 		public void send(String s) {
 			try {
 				DataOutputStream outToClient = new DataOutputStream(connection.getOutputStream());
-				outToClient.writeBytes(s);
+				outToClient.writeBytes(s+"\n");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+		
+		public void setMove(String s) {
+			move = s;
+		}
+		
+		public String getMove() {
+			if(move == null) {
+				return "";
+			}
+			return move;
+		}
 		public Socket getConnection() {
 			return connection;
+		}
+
+		@Override
+		public void run() {
+			try {
+				BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+				String s;
+				while(true) {
+					s = inFromClient.readLine();
+					if(s.toUpperCase().equals("QUIT")) {
+						connection.close();
+					}
+					if(isTurn && s != null && !s.equals("")) {
+						move = s;
+						System.out.println("hmmmst");
+						System.out.println(move);
+						s = null;
+					}
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 	}
 
@@ -145,13 +180,66 @@ public class projectServerCode {
 
 		@Override
 		public void run() {
-			player1.send("Game is beginning\n");
-			player2.send("Game is beginning\n");
+			sendBoth("Game is beginning\n");
+			TicTacToe TTT = new TicTacToe();
+			Thread thread = new Thread(player1);
+			thread.start();
+			thread = new Thread(player2);
+			thread.start();
+			sendBoth(TTT.printBoard());
 			while(true) {
-				
+				boolean check = false;
+				while(!check) {
+					player1.send("Please send a move "+player1.getName());
+					awaitMove(player1);
+					check = TTT.checkMove(player1.move, "x");
+					if(!check) {
+						player1.send("invalid move");
+					}
+					player1.setMove("");
+				}
+				sendBoth(TTT.printBoard());
+				player2.send(player1.getName()+ " has made a move!");
+				if(TTT.checkWinner()) {
+					sendBoth(player1.getName()+"wins!");
+					break;
+				}
+				check = false;
+				while(!check) {
+					player2.send("Please send a move "+player2.getName());
+					awaitMove(player2);
+					check = TTT.checkMove(player2.move, "o");
+					if(!check) {
+						player2.send("invalid move");
+					}
+					player2.setMove("");
+				}
+				sendBoth(TTT.printBoard());
+				player1.send(player2.getName()+ " has made a move!");
+				if(TTT.checkWinner()) {
+					sendBoth(player2.getName()+"wins!");
+					break;
+				}
 			}
 		}
-
+		
+		private void sendBoth(String s) {
+			player1.send(s+"\n");
+			player2.send(s+"\n");
+		}
+		
+		private String awaitMove(Players p) {
+			String s = "";
+			while(s.equals("")) {
+				String previous = s;
+				p.isTurn = true;
+				s = p.getMove();
+				System.out.println(s);
+			}
+			p.isTurn = false;
+			return s;
+		}
+		
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////	

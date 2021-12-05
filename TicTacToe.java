@@ -7,7 +7,9 @@ import java.util.Scanner;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 public class TicTacToe {
-	
+	String[][] board = new String[3][3];
+	boolean winnerCheck = false;
+	boolean winner;
 ////////////////////////////////////////////////////////////////////////////////////////////////////	
 //				Tic-Tac-Toe code based off of the following GitHub project: 					  //
 //			https://github.com/aoyshi/Java-Tic-Tac-Toe/blob/master/TicTacToe.java				  //
@@ -16,36 +18,38 @@ public class TicTacToe {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //getValidInt(String prompt): Checks to see if the player entered a valid play
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-	public static int getValidInt (String prompt) {
-		
-		//the scanner will need to be replaced for it to take tcp inputs 
-		
-		Scanner in = new Scanner(System.in);
-		while (true) {
-			System.out.print(prompt);
-			String input = in.nextLine();
-			int num = 0;
+	public boolean checkMove(String move,String icon) {
+		int spot1 = -1;
+		int spot2 = -1;
+		try {
+			spot1 = Integer.parseInt(move.split(" ")[0]);	
+			spot2 = Integer.parseInt(move.split(" ")[1]);	
+			if(board[spot1][spot2].equals("_")) {
+				board[spot1][spot2] = icon;
+				return true;
+			}
+		}
+		catch(Exception ex){
 			
-			try {
-				num = Integer.parseInt(input);
+		}
+		return false;
+	}
+	
+	public TicTacToe(){
+		for(int i = 0; i < 3;i++) {
+			for(int j = 0; j < 3;j++) {
+				board[i][j] = "_";
 			}
-			catch (Exception e) {
-				System.out.println("Invalid Integer!");
-				continue;
-			}
-			if (num < 0 || num > 2) {
-				System.out.println("Integer must be between 0 and 2");
-			}
-			return num;
 		}
 	}
+	
+	
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //checkRows(int[][] A): Checks the rows of the board for a win
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-	public static boolean checkRows(int[][] A) {
+	public  boolean checkRows(String[][] A) {
 		for (int i = 0; i < A.length; i++) {
-			
-			if ( (A[i][0] == A [i][1]) && (A[i][1] == A[i][2]) && A[i][0] != 0 ) {
+			if ( (A[i][0] == A [i][1]) && (A[i][1] == A[i][2]) && A[i][0] != "_" ) {
 				return true;
 			}
 		}
@@ -54,9 +58,9 @@ public class TicTacToe {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //checkCols(int[][] A): Checks the columns of the board for a win
 ////////////////////////////////////////////////////////////////////////////////////////////////////	
-	public static boolean checkCols(int[][] A) {
+	public  boolean checkCols(String[][] A) {
 		for (int i = 0; i < A[0].length; i++) {
-			if ( (A[0][i] == A[1][i]) && (A[1][1] == A[1][i]) && A[0][i] != 0 ) {
+			if ( (A[0][i] == A[1][i]) && (A[1][1] == A[1][i]) && A[0][i] != "_" ) {
 				return true;
 			}
 		}
@@ -65,11 +69,11 @@ public class TicTacToe {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //checkDiags(int[][] A): Checks the diagonals of the board for a win
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-	public static boolean checkDiags(int[][] A) {
-		if( (A[0][0]==A[1][1]) && (A[1][1]==A[2][2]) && A[0][0] !=0) {
+	public  boolean checkDiags(String[][] A) {
+		if( (A[0][0]==A[1][1]) && (A[1][1]==A[2][2]) && A[0][0] !="_") {
 			return true;
 		}
-		else if ( (A[0][2]==A[1][1]) && (A[1][1]==A[2][0]) && A[1][1] !=0) {
+		else if ( (A[0][2]==A[1][1]) && (A[1][1]==A[2][0]) && A[1][1] !="_") {
 			return true;
 		}
 		else {
@@ -79,13 +83,29 @@ public class TicTacToe {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //checkHit(int[][] A): Checks if there is a 3 in a row on the board
 ////////////////////////////////////////////////////////////////////////////////////////////////////	
-	public static boolean checkHit(int[][] A) {
-		if(checkRows(A) || checkCols(A) || checkDiags(A)) {
+	private boolean check(String a,String b,String c) {
+		if(winnerCheck) {
+			return winner;
+		}
+		String result = a+b+c;
+		if(result.equals("xxx")||result.equals("ooo")) {
+			winnerCheck = true;
 			return true;
 		}
-	    else {
-	    	return false;
-	    }
+		return false;
+	}
+	public boolean checkWinner() {
+	    winnerCheck = false;
+	    winner = check(board[0][0] , board[0][1] , board[0][2]);
+	    winner = check(board[1][0] , board[1][1] , board[1][2]);
+	    winner = check(board[2][0] , board[2][1] , board[2][2]);
+	    winner = check(board[0][0] , board[1][0] , board[2][0]);
+	    winner = check(board[0][1] , board[1][1] , board[2][1]);
+	    winner = check(board[0][2] , board[1][2] , board[2][2]);
+	    winner = check(board[0][0] , board[1][1] , board[2][2]);
+	    winner = check(board[0][2] , board[1][1] , board[2][0]);
+
+	    return winner;
 	  }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //isFree(int[][] A, int row, int col): Checks if the space the player chose is free
@@ -99,42 +119,26 @@ public class TicTacToe {
 			  return false;
 		  }
 	  }
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//getWinner(String turnPrompt, int[][] A, int playerNumber): Determines the game winner
-////////////////////////////////////////////////////////////////////////////////////////////////////  
-	  public static boolean getWinner(String turnPrompt, int[][] A, int playerNumber) {
-		  System.out.println(turnPrompt);
-		  int row = 0;
-		  int col = 0;
-		  while(true) {
-			  row = getValidInt("Enter row: ");
-			  col = getValidInt("Enter col: ");  
-			  if(isFree(A,row,col)) {
-				  break;
-			  }
-			  System.out.printf("[%d,%d] is already filled!\n",row,col);
-		  }  
-		  A[row][col] = playerNumber;     
-		  return checkHit(A);
-	  }
+
 	  
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //printBoard(int[][] A): Prints game board as is 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	  
-	  public static void printBoard(int[][] A) {
-		  System.out.println("-------------");
+	  public String printBoard() {
+		  String s = "";
+		  s+="-------------\n";
 		  for (int i = 0; i < 3; i++) {
-			  System.out.print("| ");
+			  s+="| ";
 			  
 			  for (int j = 0; j < 3; j++) {
-				  System.out.print(A[i][j] + " | ");
+				  s+=board[i][j] + " | ";
 			  }
 			  
-			  System.out.println();
-			  System.out.println("-------------");
+			  s+="\n";
+			  s+="-------------\n";
 		  }
-
+		  return s;
 	  }
 	
 	
@@ -143,40 +147,40 @@ public class TicTacToe {
 //main(String[] args): Plays the game with two players, determines a winner or a draw
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		int [][] grid = new int[3][3];
-		int foundWinner = 0;
-		
-		printBoard(grid);
-		
-		int i = 0;
-		while (i < 9) {
-			if (i % 2 == 0) {
-				if (getWinner("Player 1 turn", grid, 1)) {
-					foundWinner = 1;
-					System.out.println("Player 1 Wins!");
-					break;
-				}
-				printBoard(grid);
-				System.out.println();
-			}
-			else {
-				if (getWinner("Player 2 turn", grid, 2)) {
-					foundWinner = 1;
-					System.out.println("Player 2 Wins!");
-					break;
-				}
-				printBoard(grid);
-				System.out.println();
-			}
-			i++;
-		}
-		if (foundWinner == 0) {
-			System.out.println("Draw!");
-		}
-		
-		
-	}
+//	public static void main(String[] args) {
+//		// TODO Auto-generated method stub
+//		int [][] grid = new int[3][3];
+//		int foundWinner = 0;
+//		
+//		printBoard(grid);
+//		
+//		int i = 0;
+//		while (i < 9) {
+//			if (i % 2 == 0) {
+//				if (getWinner("Player 1 turn", grid, 1)) {
+//					foundWinner = 1;
+//					System.out.println("Player 1 Wins!");
+//					break;
+//				}
+//				printBoard(grid);
+//				System.out.println();
+//			}
+//			else {
+//				if (getWinner("Player 2 turn", grid, 2)) {
+//					foundWinner = 1;
+//					System.out.println("Player 2 Wins!");
+//					break;
+//				}
+//				printBoard(grid);
+//				System.out.println();
+//			}
+//			i++;
+//		}
+//		if (foundWinner == 0) {
+//			System.out.println("Draw!");
+//		}
+//		
+//		
+//	}
 
 }
