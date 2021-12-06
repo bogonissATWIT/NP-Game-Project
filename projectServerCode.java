@@ -236,17 +236,18 @@ public class projectServerCode {
 		try{
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 		DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-		
+		outToClient.writeBytes("\t-= Welcome to TCP Tic-Tac-Toe! =-\nbefore you can play, please tell us your name: \n");
 		String clientMessage = "";
 		name = inFromClient.readLine();
 		Players p = new Players(connectionSocket);
 		p.setName(name);		
 		while(true) {
+			outToClient.writeBytes("\t-= Hi " + p.getName + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2): ");
 			clientMessage = inFromClient.readLine();
 			if (clientMessage.contentEquals("1") == true) {
 				//user chooses to create new lobby
 				System.out.println("Code 01");
-				outToClient.writeBytes("User Chose to Create New Lobby! Please give the lobby a name:\n");
+				outToClient.writeBytes("User Chose to Create New Lobby! Please give the lobby a name: \n");
 				clientMessage = inFromClient.readLine();
 				Game game = new Game(clientMessage);
 				game.addPlayer(p);
