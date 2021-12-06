@@ -38,9 +38,7 @@ public class projectClientCode {
 				try {
 					String modifiedMessage;
 					modifiedMessage = inFromServer.readLine();
-					if(modifiedMessage != null) {
-					System.out.println(modifiedMessage);	
-					}
+					System.out.println(modifiedMessage);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					break;
@@ -55,7 +53,7 @@ public class projectClientCode {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String argv[]) throws Exception {
 		// TODO Auto-generated method stub
-		Socket connectionSocket = new Socket("localhost", 1234);
+		Socket connectionSocket = new Socket("10.0.0.9", 1234);
 		
 		DataOutputStream outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 		BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
@@ -71,30 +69,43 @@ public class projectClientCode {
 		//if that makes any sense... Obviously not going to stick you with all that just wanted to write it down so I knew what to do later
 		
 		
-		System.out.print("\t-= Welcome to TCP Tic-Tac-Toe! =-\nbefore you can play, please tell us your name: ");
+		//System.out.print("\t-= Welcome to TCP Tic-Tac-Toe! =-\nbefore you can play, please tell us your name: ");
 		Scanner s = new Scanner(System.in);
 		String name = s.nextLine();
 		outToServer.writeBytes(name + "\r\n");
 		
-		String lobbyChoice = "";
-		while(true) {
-			System.out.print("\t-= Hi " + name + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2): ");
-			lobbyChoice = s.nextLine();
-			if(lobbyChoice.equals("2")) {
-				outToServer.writeBytes(lobbyChoice + "\r\n");	
-				break;
-			}
-			if(lobbyChoice.equals("1")) {
-				outToServer.writeBytes(lobbyChoice + "\r\n");	
-				lobbyChoice = s.nextLine();
-				outToServer.writeBytes(lobbyChoice + "\r\n");
-				break;
-			}
+		//System.out.print("\t-= Hi " + name + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2): ");
+		String lobbyChoice = s.nextLine();
+		outToServer.writeBytes(lobbyChoice + "\r\n");
+		
+		
+		if (lobbyChoice.contentEquals("1")) {
+		//	System.out.print(name + " chose to create a new lobby!\n");
+		}
+		if (lobbyChoice.contentEquals("2")) {
+		//	System.out.print(name + " chose to join an existing lobby!\n");
+// we need to figure out how to tell if the lobby exists or not
 		}
 
-		String play = "";
+		//prompts should be sent from the server, not client side
+		
+		//System.out.print("Please type the name of the lobby: ");
+		String lobbyNameSelect = s.nextLine();
+		outToServer.writeBytes(lobbyNameSelect);
+		
+		if (lobbyChoice.contentEquals("1")) {
+		//	System.out.print(name + " created lobby '" + lobbyNameSelect +  "'!\n");
+		}
+		if (lobbyChoice.contentEquals("2")) {
+		//	System.out.print(name + " joined lobby '" + lobbyNameSelect + "'!\n");
+// we need to figure out how to tell if the lobby exists or not
+		}
+		
+		
+		String play = s.nextLine();
 		
 		while(!play.toUpperCase().equals("QUIT")) {
+			
 			play = s.nextLine();
 			outToServer.writeBytes(play + "\r\n");
 		}
