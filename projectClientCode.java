@@ -79,13 +79,6 @@ public class projectClientCode {
 		outToServer.writeBytes(lobbyChoice + "\r\n");
 		
 		
-		if (lobbyChoice.contentEquals("1")) {
-		//	System.out.print(name + " chose to create a new lobby!\n");
-		}
-		if (lobbyChoice.contentEquals("2")) {
-		//	System.out.print(name + " chose to join an existing lobby!\n");
-// we need to figure out how to tell if the lobby exists or not
-		}
 
 		//prompts should be sent from the server, not client side
 		
