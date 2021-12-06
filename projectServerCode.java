@@ -50,8 +50,9 @@ public class projectServerCode {
 		public void send(String s) {
 			try {
 				DataOutputStream outToClient = new DataOutputStream(connection.getOutputStream());
-				outToClient.writeBytes(s+"\n");
-			} catch (IOException e) {
+				outToClient.writeBytes(s + "\n");
+			} 
+			catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
@@ -95,41 +96,12 @@ public class projectServerCode {
 		}
 	}
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//newLobby class: second iteration based on code found on stack overflow
-//https://stackoverflow.com/questions/58937039/java-create-a-team-then-add-players
-////////////////////////////////////////////////////////////////////////////////////////////////////
-	static class Lobby {
-		String lobbyName;
-		public Lobby(String lobbyName) {
-			this.lobbyName = lobbyName;
-		}
-		
-		public void addPlayer (Players player) {
-			players.add(player);
-		}
-		
-		public String getLobbyName() {
-			return lobbyName;
-		}
-		
-		public List<Players> getPlayers() {
-			return players;
-		}
 
-		public static boolean lobbyExists(String userLobbyChoice) {
-			// TODO Auto-generated method stub
-			return false;
-		}
-		
-	}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//Game class: based on code found on stack overflow
-//https://stackoverflow.com/questions/58937039/java-create-a-team-then-add-players
+//Game class: most of the main code is here
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	static class Game  implements Runnable {
 		String name;
-		HashMap<String, Lobby> lobbies = new LinkedHashMap<String, Lobby>();
 		String[] allLobbyNames;
 		int numPlayers = 0;
 		Players player1;
@@ -164,19 +136,11 @@ public class projectServerCode {
 		
 		public String getPlayers() {
 			if(player2 == null) {
-				return "{"+player1.getName() + ",None}";
+				return "{" + player1.getName() + ",None}";
 			}
-			return "{"+player1.getName() + "," + player2.getName()+"}";
+			return "{" + player1.getName() + "," + player2.getName() + "}";
 		}
 		
-		public void print() {
-			for(Map.Entry<String , Lobby> entry : lobbies.entrySet() ) {
-				Lobby lobby = entry.getValue();
-				System.out.println("Lobby Name: " + lobby.getLobbyName());
-				System.out.println("Players: " + lobby.getPlayers());	
-			}
-			
-		}
 
 		@Override
 		public void run() {
@@ -190,7 +154,7 @@ public class projectServerCode {
 			while(true) {
 				boolean check = false;
 				while(!check) {
-					player1.send("Please send a move "+player1.getName());
+					player1.send("Please send a move " + player1.getName());
 					awaitMove(player1);
 					check = TTT.checkMove(player1.move, "x");
 					if(!check) {
@@ -199,14 +163,14 @@ public class projectServerCode {
 					player1.setMove("");
 				}
 				sendBoth(TTT.printBoard());
-				player2.send(player1.getName()+ " has made a move!");
+				player2.send(player1.getName() + " has made a move!");
 				if(TTT.checkWinner()) {
-					sendBoth(player1.getName()+"wins!");
+					sendBoth(player1.getName() + " wins!");
 					break;
 				}
 				check = false;
 				while(!check) {
-					player2.send("Please send a move "+player2.getName());
+					player2.send("Please send a move " + player2.getName());
 					awaitMove(player2);
 					check = TTT.checkMove(player2.move, "o");
 					if(!check) {
@@ -215,9 +179,9 @@ public class projectServerCode {
 					player2.setMove("");
 				}
 				sendBoth(TTT.printBoard());
-				player1.send(player2.getName()+ " has made a move!");
+				player1.send(player2.getName() + " has made a move!");
 				if(TTT.checkWinner()) {
-					sendBoth(player2.getName()+"wins!");
+					sendBoth(player2.getName() + "wins!");
 					break;
 				}
 			}
@@ -273,7 +237,7 @@ public class projectServerCode {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 		DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 		
-		String clientMessage ="";
+		String clientMessage = "";
 		name = inFromClient.readLine();
 		Players p = new Players(connectionSocket);
 		p.setName(name);		
@@ -287,13 +251,13 @@ public class projectServerCode {
 				Game game = new Game(clientMessage);
 				game.addPlayer(p);
 				games.add(game);
-				outToClient.writeBytes("Created Lobby called "+game.getName()+"! Waiting for another player to join.\n");
+				outToClient.writeBytes("Created Lobby called " + game.getName() + "! Waiting for another player to join.\n");
 				break;
 			}
 			
 			if (clientMessage.contentEquals("2") == true) {
 				outToClient.writeBytes("Here is a list of currently available lobbies: \n ");
-				outToClient.writeBytes(showLobbies()+"\n");
+				outToClient.writeBytes(showLobbies() + "\n");
 				if(noLobbies) {
 					System.out.println(noLobbies);
 					outToClient.writeBytes("\t-= Hi " + name + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2):\n");
@@ -304,8 +268,8 @@ public class projectServerCode {
 				while(true) {
 					clientMessage = inFromClient.readLine();
 					if(checkValid(clientMessage)) {
-						outToClient.writeBytes("Joining lobby, "+clientMessage+"\n");
-						games.get(Integer.parseInt(clientMessage)-1).addPlayer(p);
+						outToClient.writeBytes("Joining lobby, " + clientMessage+"\n");
+						games.get(Integer.parseInt(clientMessage) - 1).addPlayer(p);
 						break;
 					}
 					else if (!clientMessage.equals("")){
@@ -327,14 +291,14 @@ public class projectServerCode {
 	public String showLobbies() {
 		int count = 0;
 		String lobbies = "";
-		for(int i = 0 ; i < games.size();i++) {
+		for(int i = 0 ; i < games.size(); i++) {
 			if(!games.get(i).isFull()) {
 				count++;
-				lobbies += (i+1)+". Name:"+games.get(i).getName()+ " Players:" +games.get(i).getPlayers();
-				lobbies +="\n";
+				lobbies += (i + 1) + ". Name:" + games.get(i).getName() + " Players:" + games.get(i).getPlayers();
+				lobbies += "\n";
 			}
 		}
-		lobbies += " "+"Please input the number of the lobby you want to join.\n";
+		lobbies += " " + "Please input the number of the lobby you want to join.\n";
 		if(count == 0) {
 			lobbies = "Sorry there seems to be no games available right now \n Sending you back to lobby selection.\n";
 			noLobbies = true;
@@ -345,8 +309,8 @@ public class projectServerCode {
 	}
 	
 	public boolean checkValid(String s) {
-		for(int i = 0; i < games.size();i++) {
-			if(Integer.parseInt(s) == i+1 && !games.get(i).isFull()) {
+		for(int i = 0; i < games.size(); i++) {
+			if(Integer.parseInt(s) == i + 1 && !games.get(i).isFull()) {
 				return true;
 			}
 		}
@@ -383,23 +347,6 @@ public class projectServerCode {
 		
 
 
-	}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//displayGameBoard(): displays current game board
-////////////////////////////////////////////////////////////////////////////////////////////////////
-	public static void displayGameBoard() {
-		//this was sourced from an existing GitHub game
-		//https://gist.github.com/xaviablaza-zz/3844825
-		//this needs to be altered to be sent to the players
-		
-		
-		System.out.println("/---|---|---\\");
-		System.out.println("| " + board[0] + " | " + board[1] + " | " + board[2] + " |");
-		System.out.println("|-----------|");
-		System.out.println("| " + board[3] + " | " + board[4] + " | " + board[5] + " |");
-		System.out.println("|-----------|");
-		System.out.println("| " + board[6] + " | " + board[7] + " | " + board[8] + " |");
-		System.out.println("/---|---|---\\");
 	}
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////
