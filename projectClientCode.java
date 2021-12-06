@@ -53,7 +53,7 @@ public class projectClientCode {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String argv[]) throws Exception {
 		// TODO Auto-generated method stub
-		Socket connectionSocket = new Socket("10.0.0.9", 1234);
+		Socket connectionSocket = new Socket("localhost", 1234);
 		
 		DataOutputStream outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 		BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
@@ -84,7 +84,7 @@ public class projectClientCode {
 		
 		//System.out.print("Please type the name of the lobby: ");
 		String lobbyNameSelect = s.nextLine();
-		outToServer.writeBytes(lobbyNameSelect);
+		outToServer.writeBytes(lobbyNameSelect+"\r\n");
 		
 		if (lobbyChoice.contentEquals("1")) {
 		//	System.out.print(name + " created lobby '" + lobbyNameSelect +  "'!\n");
@@ -95,7 +95,7 @@ public class projectClientCode {
 		}
 		
 		
-		String play = s.nextLine();
+		String play = "";
 		
 		while(!play.toUpperCase().equals("QUIT")) {
 			
