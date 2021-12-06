@@ -2,13 +2,16 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,10 +30,8 @@ public class projectServerCode {
 		String name;
 		String lobbyChoice;
 		Socket connection;
-		String move;
 		boolean isTurn = false;
-		
-		
+		String move;
 		Players(Socket c){
 			connection = c;
 		}
@@ -49,8 +50,7 @@ public class projectServerCode {
 		public void send(String s) {
 			try {
 				DataOutputStream outToClient = new DataOutputStream(connection.getOutputStream());
-				outToClient.writeBytes(s + "\n");
-				
+				outToClient.writeBytes(s+"\n");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -190,7 +190,7 @@ public class projectServerCode {
 			while(true) {
 				boolean check = false;
 				while(!check) {
-					player1.send("Please send a move " + player1.getName());
+					player1.send("Please send a move "+player1.getName());
 					awaitMove(player1);
 					check = TTT.checkMove(player1.move, "x");
 					if(!check) {
@@ -199,14 +199,14 @@ public class projectServerCode {
 					player1.setMove("");
 				}
 				sendBoth(TTT.printBoard());
-				player2.send(player1.getName() + " has made a move!");
+				player2.send(player1.getName()+ " has made a move!");
 				if(TTT.checkWinner()) {
-					sendBoth(player1.getName() + "wins!");
+					sendBoth(player1.getName()+"wins!");
 					break;
 				}
 				check = false;
 				while(!check) {
-					player2.send("Please send a move " + player2.getName());
+					player2.send("Please send a move "+player2.getName());
 					awaitMove(player2);
 					check = TTT.checkMove(player2.move, "o");
 					if(!check) {
@@ -215,17 +215,17 @@ public class projectServerCode {
 					player2.setMove("");
 				}
 				sendBoth(TTT.printBoard());
-				player1.send(player2.getName() + " has made a move!");
+				player1.send(player2.getName()+ " has made a move!");
 				if(TTT.checkWinner()) {
-					sendBoth(player2.getName() + "wins!");
+					sendBoth(player2.getName()+"wins!");
 					break;
 				}
 			}
 		}
 		
 		private void sendBoth(String s) {
-			player1.send(s + "\n");
-			player2.send(s + "\n");
+			player1.send(s+"\n");
+			player2.send(s+"\n");
 		}
 		
 		private String awaitMove(Players p) {
@@ -273,34 +273,27 @@ public class projectServerCode {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 		DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 		
-		String clientMessage = "";
-		outToClient.writeBytes("\t-= Welcome to TCP Tic-Tac-Toe! =-\nbefore you can play, please tell us your name: \n");
+		String clientMessage ="";
 		name = inFromClient.readLine();
 		Players p = new Players(connectionSocket);
 		p.setName(name);		
 		while(true) {
-			outToClient.writeBytes("\t-= Hi " + p.getName() + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2): \n");
 			clientMessage = inFromClient.readLine();
 			if (clientMessage.contentEquals("1") == true) {
 				//user chooses to create new lobby
 				System.out.println("Code 01");
-				outToClient.writeBytes("User Chose to Create New Lobby! Please give the lobby a name: \n");
+				outToClient.writeBytes("User Chose to Create New Lobby! Please give the lobby a name:\n");
 				clientMessage = inFromClient.readLine();
 				Game game = new Game(clientMessage);
 				game.addPlayer(p);
 				games.add(game);
-				outToClient.writeBytes("Created Lobby called " + game.getName() + "! Waiting for another player to join.\n");
+				outToClient.writeBytes("Created Lobby called "+game.getName()+"! Waiting for another player to join.\n");
 				break;
 			}
 			
-			
-//BUG: if player selects to join existing lobby and there are no lobbies to join, 
-//the server prints the "Would you like to create a new lobby (1)..." message twice
-//if the player then selects to create a new lobby, nothing happens
-			
 			if (clientMessage.contentEquals("2") == true) {
 				outToClient.writeBytes("Here is a list of currently available lobbies: \n ");
-				outToClient.writeBytes(showLobbies() + "\n");
+				outToClient.writeBytes(showLobbies()+"\n");
 				if(noLobbies) {
 					System.out.println(noLobbies);
 					outToClient.writeBytes("\t-= Hi " + name + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2):\n");
@@ -311,11 +304,11 @@ public class projectServerCode {
 				while(true) {
 					clientMessage = inFromClient.readLine();
 					if(checkValid(clientMessage)) {
-						outToClient.writeBytes("Joining lobby, " + clientMessage+"\n");
-						games.get(Integer.parseInt(clientMessage) - 1).addPlayer(p);
+						outToClient.writeBytes("Joining lobby, "+clientMessage+"\n");
+						games.get(Integer.parseInt(clientMessage)-1).addPlayer(p);
 						break;
 					}
-					else if (!clientMessage.equals("")) {
+					else if (!clientMessage.equals("")){
 						outToClient.writeBytes("Invalid Lobby\n");
 						clientMessage = "";
 					}
@@ -337,11 +330,11 @@ public class projectServerCode {
 		for(int i = 0 ; i < games.size();i++) {
 			if(!games.get(i).isFull()) {
 				count++;
-				lobbies += (i + 1) + ". Name:" + games.get(i).getName() + " Players:" + games.get(i).getPlayers();
-				lobbies += "\n";
+				lobbies += (i+1)+". Name:"+games.get(i).getName()+ " Players:" +games.get(i).getPlayers();
+				lobbies +="\n";
 			}
 		}
-		lobbies += " " + "Please input the number of the lobby you want to join.\n";
+		lobbies += " "+"Please input the number of the lobby you want to join.\n";
 		if(count == 0) {
 			lobbies = "Sorry there seems to be no games available right now \n Sending you back to lobby selection.\n";
 			noLobbies = true;
@@ -352,8 +345,8 @@ public class projectServerCode {
 	}
 	
 	public boolean checkValid(String s) {
-		for(int i = 0; i < games.size(); i++) {
-			if(Integer.parseInt(s) == i + 1 && !games.get(i).isFull()) {
+		for(int i = 0; i < games.size();i++) {
+			if(Integer.parseInt(s) == i+1 && !games.get(i).isFull()) {
 				return true;
 			}
 		}
@@ -363,8 +356,8 @@ public class projectServerCode {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // main(String[] args): sets up multithreading and adds new users to players 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-	public static void main(String[] args) throws Exception {
-
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
 		
 		ServerSocket serverSocket;
 		int port = 1234;
