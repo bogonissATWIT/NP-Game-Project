@@ -242,7 +242,7 @@ public class projectServerCode {
 		Players p = new Players(connectionSocket);
 		p.setName(name);		
 		while(true) {
-			outToClient.writeBytes("\t-= Hi " + p.getName + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2): ");
+			outToClient.writeBytes("\t-= Hi " + name + "! =- \nWould you like to create a new lobby (1), or join an existing lobby? (2): \n");
 			clientMessage = inFromClient.readLine();
 			if (clientMessage.contentEquals("1") == true) {
 				//user chooses to create new lobby
