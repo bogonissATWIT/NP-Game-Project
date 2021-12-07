@@ -26,27 +26,22 @@ public class projectClientCode {
 			this.inFromServer = inFromServer;
 		}
 
-		
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //run(): handles users inputs, where the magic happens
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 		@Override
 		public void run() {
-			// TODO Auto-generated method stub
 			while(true) {
 				try {
 					String modifiedMessage;
 					modifiedMessage = inFromServer.readLine();
 					System.out.println(modifiedMessage);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					break;
 				}
 			}
 		}
 	}
-	
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //main(String[] args): sets up multithreading and adds new users to players 
@@ -61,39 +56,16 @@ public class projectClientCode {
 		GameProject gameproject = new GameProject(outToServer,inFromServer);
 		Thread thread = new Thread(gameproject);
 		thread.start();
-		//optional formatting changes just to make it look a little nicer
-		
-		//I had the idea of basically taking the chatroom lab and adding to that and making the game. 
-		//This would make it look more professionally done and neat I guess. Having the names and all...
-		//Instead of "Name: 1 2" for like the row and columnm, we could have the server announce "Name played at position 1 2!"
-		//if that makes any sense... Obviously not going to stick you with all that just wanted to write it down so I knew what to do later
-		
-		
-		//System.out.print("\t-= Welcome to TCP Tic-Tac-Toe! =-\nbefore you can play, please tell us your name: ");
+			
 		Scanner s = new Scanner(System.in);
 		String name = s.nextLine();
 		outToServer.writeBytes(name + "\r\n");
 		
-		//System.out.print("\t-= Hi " + name + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2): ");
 		String lobbyChoice = s.nextLine();
 		outToServer.writeBytes(lobbyChoice + "\r\n");
 		
-		
-
-		//prompts should be sent from the server, not client side
-		
-		//System.out.print("Please type the name of the lobby: ");
 		String lobbyNameSelect = s.nextLine();
 		outToServer.writeBytes(lobbyNameSelect+"\r\n");
-		
-		if (lobbyChoice.contentEquals("1")) {
-		//	System.out.print(name + " created lobby '" + lobbyNameSelect +  "'!\n");
-		}
-		if (lobbyChoice.contentEquals("2")) {
-		//	System.out.print(name + " joined lobby '" + lobbyNameSelect + "'!\n");
-// we need to figure out how to tell if the lobby exists or not
-		}
-		
 		
 		String play = "";
 		
@@ -105,11 +77,8 @@ public class projectClientCode {
 		
 		s.close();
 		outToServer.close();
-		connectionSocket.close();
-		
-		
+		connectionSocket.close();	
 		
 	}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }
-
