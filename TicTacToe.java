@@ -10,6 +10,7 @@ public class TicTacToe {
 	String[][] board = new String[3][3];
 	boolean winnerCheck = false;
 	boolean winner;
+	
 ////////////////////////////////////////////////////////////////////////////////////////////////////	
 //				Tic-Tac-Toe code based off of the following GitHub project: 					  //
 //			https://github.com/aoyshi/Java-Tic-Tac-Toe/blob/master/TicTacToe.java				  //
@@ -36,13 +37,12 @@ public class TicTacToe {
 	}
 	
 	public TicTacToe(){
-		for(int i = 0; i < 3;i++) {
-			for(int j = 0; j < 3;j++) {
+		for(int i = 0; i < 3; i++) {
+			for(int j = 0; j < 3; j++) {
 				board[i][j] = "_";
 			}
 		}
 	}
-	
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //checkHit(int[][] A): Checks if there is a 3 in a row on the board
@@ -51,8 +51,8 @@ public class TicTacToe {
 		if(winnerCheck) {
 			return winner;
 		}
-		String result = a+b+c;
-		if(result.equals("xxx")||result.equals("ooo")) {
+		String result = a + b + c;
+		if(result.equals("xxx") || result.equals("ooo")) {
 			winnerCheck = true;
 			return true;
 		}
@@ -71,22 +71,22 @@ public class TicTacToe {
 
 	    return winner;
 	  }	  
+	
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //printBoard(int[][] A): Prints game board as is 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-	  
 	  public String printBoard() {
 		  String s = "";
-		  s+="-------------\n";
+		  s += "-------------\n";
 		  for (int i = 0; i < 3; i++) {
-			  s+="| ";
+			  s += "| ";
 			  
 			  for (int j = 0; j < 3; j++) {
-				  s+=board[i][j] + " | ";
+				  s += board[i][j] + " | ";
 			  }
 			  
-			  s+="\n";
-			  s+="-------------\n";
+			  s += "\n";
+			  s += "-------------\n";
 		  }
 		  return s;
 	  }
