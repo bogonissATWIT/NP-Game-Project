@@ -26,13 +26,14 @@ public class projectServerCode {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Players class: defines individual players and ties their information to their thread connection
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-	static class Players implements Runnable{
+	static class Players implements Runnable {
 		String name;
 		String lobbyChoice;
 		Socket connection;
 		boolean isTurn = false;
 		String move;
-		Players(Socket c){
+		
+		Players(Socket c) {
 			connection = c;
 		}
 		
@@ -59,13 +60,14 @@ public class projectServerCode {
 		public void setMove(String s) {
 			move = s;
 		}
-		
+	
 		public synchronized String getMove() {
 			if(move == null) {
 				return "";
 			}
 			return move;
 		}
+		
 		public Socket getConnection() {
 			return connection;
 		}
@@ -90,7 +92,6 @@ public class projectServerCode {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
 		}
 	}
 
@@ -132,13 +133,11 @@ public class projectServerCode {
 		
 		public String getPlayers() {
 			if(player2 == null) {
-				return "{"+player1.getName() + ",None}";
+				return "{" + player1.getName() + ",None}";
 			}
-			return "{"+player1.getName() + "," + player2.getName()+"}";
+			return "{" + player1.getName() + "," + player2.getName() + "}";
 		}
 		
-
-
 		@Override
 		public void run() {
 			sendBoth("Game is beginning");
@@ -201,7 +200,6 @@ public class projectServerCode {
 			p.isTurn = false;
 			return s;
 		}
-		
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////	
@@ -210,17 +208,15 @@ public class projectServerCode {
 	static List<Players> players = new ArrayList<>();
 	static List<Game> games = new ArrayList<>();
 	static List<String> prevMsg = new ArrayList<>();
-	
 	static String[] board;
 	static String turn;
-	
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // ClientRequest: server-side socket handling
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	static class ClientRequest implements Runnable {
 			Socket connectionSocket;
 			private boolean noLobbies;
-			ClientRequest(Socket c){
+			ClientRequest(Socket c) {
 				connectionSocket = c;
 		}
 			
@@ -230,7 +226,7 @@ public class projectServerCode {
 	@Override
 	public void run() {
 		String name;
-		try{
+		try {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 		DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 		outToClient.writeBytes("\t-= Welcome to TCP Tic-Tac-Toe! =-\nbefore you can play, please tell us your name: \n");
@@ -242,7 +238,6 @@ public class projectServerCode {
 			outToClient.writeBytes("\t-= Hi " + name + "! =-\nWould you like to create a new lobby (1), or join an existing lobby? (2):\n");
 			clientMessage = inFromClient.readLine();
 			if (clientMessage.contentEquals("1") == true) {
-				//user chooses to create new lobby
 				System.out.println("Code 01");
 				outToClient.writeBytes("User Chose to Create New Lobby! Please give the lobby a name:\n");
 				clientMessage = inFromClient.readLine();
@@ -252,7 +247,6 @@ public class projectServerCode {
 				outToClient.writeBytes("Created Lobby called " + game.getName() + "! Waiting for another player to join.\n");
 				break;
 			}
-			
 			if (clientMessage.contentEquals("2") == true) {
 				outToClient.writeBytes("Here is a list of currently available lobbies: \n ");
 				outToClient.writeBytes(showLobbies() + "\n");
@@ -269,7 +263,7 @@ public class projectServerCode {
 						games.get(Integer.parseInt(clientMessage) - 1).addPlayer(p);
 						break;
 					}
-					else if (!clientMessage.equals("")){
+					else if (!clientMessage.equals("")) {
 						outToClient.writeBytes("Invalid Lobby\n");
 						clientMessage = "";
 					}
@@ -277,7 +271,6 @@ public class projectServerCode {
 				break;
 			}
 		}
-
 		}
 		catch(Exception ex) {
 			ex.printStackTrace();
@@ -322,14 +315,12 @@ public class projectServerCode {
 		try {
 			serverSocket = new ServerSocket(port);
 			System.out.println("Server listening to port " + port);
-
 			while (true) {
 				Socket connectionSocket = serverSocket.accept();
 				ClientRequest clientRequest = new ClientRequest(connectionSocket);
 				Thread thread = new Thread(clientRequest);
 				thread.start();
 				players.add(new Players(connectionSocket));
-				
 			}
 		}
 			catch (Exception ex) {
@@ -356,6 +347,7 @@ public class projectServerCode {
 			outToClient.writeBytes(name + ": " + msg);
 		}
 	}
+	
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // sentToAll(String msg): sends a string message to users connected to the server
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -383,5 +375,6 @@ public class projectServerCode {
 			}
 		}
 	}
+	
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }
