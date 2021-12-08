@@ -47,7 +47,6 @@ public class projectClientCode {
 //main(String[] args): sets up multithreading and adds new users to players 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static void main(String argv[]) throws Exception {
-		// TODO Auto-generated method stub
 		Socket connectionSocket = new Socket("localhost", 1234);
 		
 		DataOutputStream outToServer = new DataOutputStream(connectionSocket.getOutputStream());
