@@ -1,4 +1,3 @@
-import java.util.Scanner;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //								TCP-Tac-Toe ---- Game Code										  //
 //								Sam Bogonis & Shemar Mahase										  //
@@ -31,7 +30,6 @@ public class TicTacToe {
 			}
 		}
 		catch(Exception ex){
-			
 		}
 		return false;
 	}
