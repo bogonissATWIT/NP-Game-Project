@@ -2,16 +2,11 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketImpl;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,7 +186,6 @@ public class projectServerCode {
 		
 		private String awaitMove(Players p) {
 			String s = "";
-			String previous = " ";
 			p.isTurn = true;
 			while(s.equals("")) {
 				p.isTurn = true;
