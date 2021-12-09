@@ -25,7 +25,7 @@ unique features such as custom names, custom lobby names, and more.
 
 ## Demo video
 
-Coming soon!
+https://youtu.be/rr1pyJEdJ2M
 
 ## Team members
 
